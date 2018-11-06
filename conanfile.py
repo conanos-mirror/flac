@@ -18,8 +18,8 @@ class FlacConan(ConanFile):
     source_subfolder = "sources"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "use_asm": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "use_asm=False", "fPIC=True"
-    requires = "ogg/1.3.3@bincrafters/stable"
+    default_options = "shared=True", "use_asm=False", "fPIC=True"
+    requires = "libogg/1.3.3@conanos/dev"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -51,6 +51,26 @@ class FlacConan(ConanFile):
         cmake = self.configure_cmake()
         cmake.install()
         self.copy(pattern="COPYING.*", dst="licenses", src=self.source_subfolder, keep_path=False)
+        
+        pc_content ='''
+        prefix={prefix}
+        exec_prefix=${{prefix}}
+        libdir=${{prefix}}/lib
+        toolexeclibdir=${{prefix}}/lib
+        includedir=${{prefix}}/include
+        
+        Name: {name}
+        Description: {description}
+        Version: {version}
+        Libs: -L${{toolexeclibdir}} -l{name}
+        Cflags: -I${{includedir}}
+        '''
+        
+        tools.save('%s/lib/pkgconfig/%s.pc'%(self.package_folder, self.name), 
+        pc_content.format(prefix=self.package_folder, name=self.name, version=self.version, description=self.description))
+
+        tools.save('%s/lib/pkgconfig/%s++.pc'%(self.package_folder, self.name), 
+        pc_content.format(prefix=self.package_folder, name='%s++'%(self.name), version=self.version, description=self.description))
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
