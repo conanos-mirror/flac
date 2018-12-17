@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, CMake, tools
+from conanos.build import config_scheme
 import os
 
 
@@ -9,30 +10,37 @@ class FlacConan(ConanFile):
     name = "flac"
     version = "1.3.2"
     description = "Free Lossless Audio Codec"
+    url = "https://github.com/conanos/flac"
     homepage = "https://github.com/xiph/flac"
-    url = "https://github.com/bincrafters/conan-flac"
     license = "BSD"
     exports = ["LICENSE.md"]
     exports_sources = ["CMakeLists.txt"]
     generators = "cmake"
-    source_subfolder = "sources"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "use_asm": [True, False], "fPIC": [True, False]}
-    default_options = "shared=True", "use_asm=False", "fPIC=True"
-    requires = "libogg/1.3.3@conanos/dev"
+    default_options = "shared=True", "use_asm=True", "fPIC=True"
+    requires = "libogg/1.3.3@conanos/stable"
+
+    _source_subfolder = "source_subfolder"
+    _build_subfolder = "build_subfolder"
 
     def config_options(self):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
 
+    def configure(self):
+        del self.settings.compiler.libcxx
+
+        config_scheme(self)
+
     def build_requirements(self):
         if self.options.use_asm:
-            self.build_requires("nasm/2.13.01@conan/stable")
+            self.build_requires("nasm/2.13.01@conanos/stable")
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
         extracted_dir = self.name + "-" + self.version
-        os.rename(extracted_dir, self.source_subfolder)
+        os.rename(extracted_dir, self._source_subfolder)
 
     def configure_cmake(self):
         cmake = CMake(self)
@@ -50,7 +58,7 @@ class FlacConan(ConanFile):
     def package(self):
         cmake = self.configure_cmake()
         cmake.install()
-        self.copy(pattern="COPYING.*", dst="licenses", src=self.source_subfolder, keep_path=False)
+        self.copy(pattern="COPYING.*", dst="licenses", src=self._source_subfolder, keep_path=False)
         
         pc_content ='''
         prefix={prefix}

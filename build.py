@@ -2,9 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-from bincrafters import build_template_default
+#from bincrafters import build_template_default
+#
+#if __name__ == "__main__":
+#    builder = build_template_default.get_builder(pure_c=False)
+#
+#    builder.run()
+
+from conanos.build import Main
 
 if __name__ == "__main__":
-    builder = build_template_default.get_builder(pure_c=False)
-
-    builder.run()
+    Main('flac',pure_c=True)

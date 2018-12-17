@@ -14,7 +14,7 @@ include(conanbuildinfo.cmake)
 
 conan_basic_setup()
 
-set(FLAC_SRC_DIR ${PROJECT_SOURCE_DIR}/sources)
+set(FLAC_SRC_DIR ${PROJECT_SOURCE_DIR}/source_subfolder)
 
 file(GLOB LIBFLAC_SOURCES ${FLAC_SRC_DIR}/src/libFLAC/*.c)
 
